@@ -7,6 +7,9 @@ import (
 )
 
 type searchFocusLostMsg struct{}
+type searchConfirmedMsg struct {
+	url string
+}
 
 type searchBar struct {
 	style lipgloss.Style
@@ -17,6 +20,7 @@ func newSearchBar() searchBar {
 	input := textinput.New()
 	// input.Placeholder = "Type a URL"
 	input.Focus()
+	input.Prompt = ""
 
 	return searchBar{
 		style: lipgloss.NewStyle(),
@@ -38,9 +42,17 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.input.Focus()
 		return s, textinput.Blink
 	case tea.KeyMsg:
-		if msg.Type == tea.KeyEscape {
+		switch msg.Type {
+		case tea.KeyEscape:
 			s.input.Blur()
 			return s, func() tea.Msg { return searchFocusLostMsg{} }
+		case tea.KeyEnter:
+			s.input.Blur()
+			return s, func() tea.Msg {
+				return searchConfirmedMsg{
+					url: s.input.Value(),
+				}
+			}
 		}
 	}
 	s.input, cmd = s.input.Update(msg)

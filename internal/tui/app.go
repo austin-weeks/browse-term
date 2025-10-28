@@ -24,14 +24,16 @@ type app struct {
 	// Tabs later
 	searchBar tea.Model
 	page      tea.Model
-	// Commands later
+	keybinds  keybinds
 }
 
 func New() app {
 	return app{
 		focus: searchFocus,
 
-		title:     lipgloss.NewStyle().Bold(true).Align(lipgloss.Center).Foreground(lipgloss.Color("#080808")).SetString("Terminal Browser"),
+		title:    lipgloss.NewStyle().Bold(true).Align(lipgloss.Center).Foreground(lipgloss.Color("#080808")).SetString("Terminal Browser"),
+		keybinds: newKeybinds(),
+
 		searchBar: newSearchBar(),
 		page:      newPage(),
 	}
@@ -53,7 +55,10 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		a.cols, a.rows = msg.Width, msg.Height
 		a.title = a.title.Width(a.cols)
+		a.keybinds.setWidth(a.cols)
+
 		msg.Height -= lipgloss.Height(a.title.Render() + "\n")
+		msg.Height -= lipgloss.Height(a.keybinds.view(a.focus))
 
 		a.searchBar, cmd = a.searchBar.Update(msg)
 		cmds = append(cmds, cmd)
@@ -82,6 +87,11 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case searchFocusLostMsg:
 		a.focus = pageFocus
+
+	case searchConfirmedMsg:
+		// TODO make this actually search for content
+		println(msg.url)
+		return a, tea.Quit
 	}
 
 	return a, tea.Batch(cmds...)
@@ -91,6 +101,7 @@ func (a app) View() string {
 	s := a.title.Render() + "\n"
 	s += a.searchBar.View()
 	s += a.page.View()
+	s += a.keybinds.view(a.focus)
 
 	return s
 }
