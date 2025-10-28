@@ -40,5 +40,6 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (p page) View() string {
-	return p.viewport.View()
+	p.viewport.SetContent("Hellooooo I love the world!\n\nPoopy Farty")
+	return p.viewport.View() + "\n"
 }
