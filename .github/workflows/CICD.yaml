@@ -19,7 +19,7 @@ jobs:
 
       - name: Check Formatting
         run: |
-          test -z go fmt .
+          test -z $(go fmt .)
 
       - name: Run Tests
         run: |
