@@ -6,14 +6,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type searchFocusLostMsg struct{}
-type searchConfirmedMsg struct {
-	url string
-}
-
 type searchBar struct {
 	style lipgloss.Style
 	input textinput.Model
+}
+
+func searchFocusLostCmd() tea.Msg {
+	return focusLostMsg{focus: searchFocus}
 }
 
 func newSearchBar() searchBar {
@@ -41,22 +40,32 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case shouldFocusMsg:
 		s.input.Focus()
 		return s, textinput.Blink
+
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyEscape:
+		case tea.KeyEscape, tea.KeyEnter:
 			s.input.Blur()
-			return s, func() tea.Msg { return searchFocusLostMsg{} }
-		case tea.KeyEnter:
-			s.input.Blur()
-			return s, func() tea.Msg {
-				return searchConfirmedMsg{
-					url: s.input.Value(),
-				}
+			cmds = append(cmds, searchFocusLostCmd)
+
+			if msg.Type == tea.KeyEnter {
+				cmds = append(cmds, func() tea.Msg {
+					return searchConfirmedMsg{
+						url: s.input.Value(),
+					}
+				}, searchFocusLostCmd)
 			}
+		default:
+			s.input, cmd = s.input.Update(msg)
+			cmds = append(cmds, cmd)
 		}
+
+	case pageContentMsg:
+		s.input.SetValue(msg.contents.Url)
+
+	default:
+		s.input, cmd = s.input.Update(msg)
+		cmds = append(cmds, cmd)
 	}
-	s.input, cmd = s.input.Update(msg)
-	cmds = append(cmds, cmd)
 
 	return s, tea.Batch(cmds...)
 }

@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"github.com/austin-weeks/browse-term/internal/browser"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -11,8 +12,6 @@ const (
 	searchFocus focus = iota
 	pageFocus
 )
-
-type shouldFocusMsg struct{}
 
 type app struct {
 	// State
@@ -85,13 +84,34 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, cmd)
 		}
 
-	case searchFocusLostMsg:
-		a.focus = pageFocus
+	case focusLostMsg:
+		switch msg.focus {
+		case searchFocus:
+			a.focus = pageFocus
+		case pageFocus:
+			// no op
+		}
 
 	case searchConfirmedMsg:
-		// TODO make this actually search for content
-		println(msg.url)
-		return a, tea.Quit
+		resp, err := browser.FetchWebPage(msg.url)
+		if err != nil {
+			cmds = append(cmds, func() tea.Msg { return pageErrMsg{err: err} })
+		}
+		cmds = append(cmds, func() tea.Msg { return pageContentMsg{contents: resp} })
+
+	case pageContentMsg:
+		// println(msg.contents.Title)
+		// We need to send the title to the tabs
+		a.page, cmd = a.page.Update(msg)
+		cmds = append(cmds, cmd)
+		a.searchBar, cmd = a.searchBar.Update(msg)
+		cmds = append(cmds, cmd)
+
+	case pageErrMsg:
+		a.page, cmd = a.page.Update(msg)
+		cmds = append(cmds, cmd)
+
+	default:
 	}
 
 	return a, tea.Batch(cmds...)

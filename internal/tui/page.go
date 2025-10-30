@@ -35,11 +35,16 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		p.viewport, cmd = p.viewport.Update(msg)
 		cmds = append(cmds, cmd)
+
+	case pageContentMsg:
+		p.viewport.SetContent(msg.contents.Content)
+
+	case pageErrMsg:
+		p.viewport.SetContent("Something went wrong :(\n\n\n" + msg.err.Error())
 	}
 	return p, tea.Batch(cmds...)
 }
 
 func (p page) View() string {
-	p.viewport.SetContent("Hellooooo I love the world!\n\nPoopy Farty")
 	return p.viewport.View() + "\n"
 }
