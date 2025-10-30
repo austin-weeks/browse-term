@@ -1,0 +1,38 @@
+name: CICD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Check-And-Build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Check Formatting
+        run: |
+          test -z go fmt .
+
+      - name: Run Tests
+        run: |
+          go test ./...
+
+      - name: Check Build
+        run: |
+          go build .
+
+      - name: Update Tag
+        run: |
+          NEW_TAG="v$(uvx AutoGitSemVer --no-branch-name --no-metadata --quiet)"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
