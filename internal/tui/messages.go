@@ -2,10 +2,15 @@ package tui
 
 import "github.com/austin-weeks/browse-term/internal/browser"
 
-type shouldFocusMsg struct{}
+type focus int
 
-type focusLostMsg struct {
-	focus focus
+const (
+	focusSearch focus = iota
+	focusPage
+)
+
+type focusChangedMsg struct {
+	target focus
 }
 
 type searchConfirmedMsg struct {
@@ -16,6 +21,12 @@ type pageErrMsg struct {
 	err error
 }
 
+// Sent with the focused page changes
 type pageContentMsg struct {
-	contents browser.WebPage
+	c browser.WebPage
+}
+
+type tabChangedMsg struct {
+	url    string
+	newTab bool
 }

@@ -37,7 +37,7 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 
 	case pageContentMsg:
-		p.viewport.SetContent(msg.contents.Content)
+		p.viewport.SetContent(msg.c.Content)
 
 	case pageErrMsg:
 		p.viewport.SetContent("Something went wrong :(\n\n\n" + msg.err.Error())

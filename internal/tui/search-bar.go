@@ -11,14 +11,9 @@ type searchBar struct {
 	input textinput.Model
 }
 
-func searchFocusLostCmd() tea.Msg {
-	return focusLostMsg{focus: searchFocus}
-}
-
 func newSearchBar() searchBar {
 	input := textinput.New()
-	// input.Placeholder = "Type a URL"
-	input.Focus()
+	input.Placeholder = "Type a URL"
 	input.Prompt = ""
 
 	return searchBar{
@@ -28,7 +23,7 @@ func newSearchBar() searchBar {
 }
 
 func (s searchBar) Init() tea.Cmd {
-	return textinput.Blink
+	return nil
 }
 
 func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -37,30 +32,43 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 	switch msg := msg.(type) {
-	case shouldFocusMsg:
-		s.input.Focus()
-		return s, textinput.Blink
+	case focusChangedMsg:
+		if msg.target != focusSearch {
+			break
+		}
+		cmd = s.input.Focus()
+		cmds = append(cmds, cmd)
+		s.input.CursorEnd()
 
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEscape, tea.KeyEnter:
 			s.input.Blur()
-			cmds = append(cmds, searchFocusLostCmd)
+			cmds = append(cmds, s.loseFocus())
 
 			if msg.Type == tea.KeyEnter {
-				cmds = append(cmds, func() tea.Msg {
-					return searchConfirmedMsg{
-						url: s.input.Value(),
-					}
-				}, searchFocusLostCmd)
+				cmds = append(cmds,
+					func() tea.Msg { return searchConfirmedMsg{url: s.input.Value()} },
+					s.loseFocus(),
+				)
 			}
 		default:
 			s.input, cmd = s.input.Update(msg)
 			cmds = append(cmds, cmd)
 		}
 
+	case tabChangedMsg:
+		s.input.SetValue(msg.url)
+		if msg.newTab {
+			cmds = append(cmds, func() tea.Msg {
+				return focusChangedMsg{
+					target: focusSearch,
+				}
+			})
+		}
+
 	case pageContentMsg:
-		s.input.SetValue(msg.contents.Url)
+		s.input.SetValue(msg.c.Url)
 
 	default:
 		s.input, cmd = s.input.Update(msg)
@@ -72,4 +80,12 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (s searchBar) View() string {
 	return s.input.View() + "\n"
+}
+
+func (s searchBar) loseFocus() tea.Cmd {
+	return func() tea.Msg {
+		return focusChangedMsg{
+			target: focusPage,
+		}
+	}
 }

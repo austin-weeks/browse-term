@@ -9,6 +9,10 @@ import (
 var pageFocusKeys = []string{
 	"q - quit",
 	"/ - search",
+	"h - tab left",
+	"l - tab right",
+	"^w - close tab",
+	"^n - new tab",
 }
 
 var searchFocusKeys = []string{
@@ -34,9 +38,9 @@ func (k *keybinds) setWidth(w int) {
 func (k keybinds) view(focus focus) string {
 	var keys []string
 	switch focus {
-	case pageFocus:
+	case focusPage:
 		keys = pageFocusKeys
-	case searchFocus:
+	case focusSearch:
 		keys = searchFocusKeys
 	default:
 		panic("unhandled focus")
