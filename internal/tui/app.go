@@ -10,7 +10,6 @@ type app struct {
 	// State
 	cols, rows int
 	focus      focus
-	website    map[string]browser.WebPage
 
 	// Components
 	title     lipgloss.Style
@@ -24,9 +23,6 @@ type app struct {
 func New() app {
 	return app{
 		focus: focusSearch,
-		// TODO - STORE CONTENTS OF PAGES IN MAP
-		// Maybe the browser package should store the state?
-		website: make(map[string]browser.WebPage),
 
 		title:     lipgloss.NewStyle().Bold(true).Align(lipgloss.Center).Foreground(lipgloss.Color("#080808")).SetString("Terminal Browser"),
 		tabBar:    newTabBar(),
@@ -123,6 +119,14 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 
 	case tabChangedMsg:
+		if msg.url != "" {
+			cmds = append(cmds, func() tea.Msg {
+				return searchConfirmedMsg{
+					url: msg.url,
+				}
+			})
+			break
+		}
 		a.searchBar, cmd = a.searchBar.Update(msg)
 		cmds = append(cmds, cmd)
 

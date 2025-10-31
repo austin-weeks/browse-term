@@ -9,6 +9,11 @@ import (
 	"golang.org/x/net/html"
 )
 
+// TODO - clear cache after certain time to avoid memory growing endlessly (probably not something to worry about)
+
+// url -> WebPage
+var webPages map[string]WebPage = make(map[string]WebPage)
+
 // Represents a website page
 type WebPage struct {
 	Url     string
@@ -20,6 +25,10 @@ type WebPage struct {
 func FetchWebPage(url string) (WebPage, error) {
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		url = "https://" + url
+	}
+
+	if page, ok := webPages[url]; ok {
+		return page, nil
 	}
 
 	resp, err := http.Get(url)
@@ -47,12 +56,14 @@ func FetchWebPage(url string) (WebPage, error) {
 		}
 	}
 
-	return WebPage{
+	webPage := WebPage{
 		Url:     url,
 		Title:   title,
 		Content: page,
 		Links:   []string{},
-	}, nil
+	}
+	webPages[url] = webPage
+	return webPage, nil
 }
 
 func extractTitle(parent *html.Node) (string, error) {

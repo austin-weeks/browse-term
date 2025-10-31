@@ -42,16 +42,18 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyEscape, tea.KeyEnter:
+		case tea.KeyEscape:
 			s.input.Blur()
 			cmds = append(cmds, s.loseFocus())
-
-			if msg.Type == tea.KeyEnter {
-				cmds = append(cmds,
-					func() tea.Msg { return searchConfirmedMsg{url: s.input.Value()} },
-					s.loseFocus(),
-				)
+		case tea.KeyEnter:
+			if s.input.Value() == "" {
+				break
 			}
+			s.input.Blur()
+			cmds = append(cmds,
+				func() tea.Msg { return searchConfirmedMsg{url: s.input.Value()} },
+				s.loseFocus(),
+			)
 		default:
 			s.input, cmd = s.input.Update(msg)
 			cmds = append(cmds, cmd)
