@@ -2,7 +2,6 @@ package browser
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
@@ -39,7 +38,13 @@ func FetchWebPage(url string) (WebPage, error) {
 		return page, nil
 	}
 
-	resp, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return WebPage{}, err
+	}
+	req.Header.Set("User-Agent", "Browse-Term (https://github.com/austin-weeks/browse-term)")
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return WebPage{}, err
 	}
@@ -49,23 +54,22 @@ func FetchWebPage(url string) (WebPage, error) {
 		return WebPage{}, fmt.Errorf("Non-200 response: %v", resp.StatusCode)
 	}
 
-	bytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return WebPage{}, err
-	}
-	page := string(bytes)
-
 	title := url
-	if dom, err := html.Parse(strings.NewReader(page)); err == nil {
+	dom, err := html.Parse(resp.Body)
+	if err == nil {
 		if t, err := extractTitle(dom); err == nil {
 			title = t
 		}
+	}
+	md, err := toMarkdown(dom)
+	if err != nil {
+		return WebPage{}, err
 	}
 
 	webPage := WebPage{
 		Url:     prettyUrl,
 		Title:   title,
-		Content: page,
+		Content: md,
 		Links:   []string{},
 	}
 	webPages[url] = webPage

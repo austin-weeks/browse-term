@@ -36,8 +36,8 @@ var (
 			Padding(0, 1).Align(lipgloss.Center).
 			Border(getRegularBorder()).BorderForeground(BORDER).
 			Transform(func(s string) string {
-			if len(s) > maxTabWidth {
-				s = s[:maxTabWidth-2] + "…"
+			if len(s) >= maxTabWidth {
+				s = s[:maxTabWidth-3] + "…"
 			}
 			return s
 		})

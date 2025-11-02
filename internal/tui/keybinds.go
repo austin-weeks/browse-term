@@ -14,7 +14,7 @@ var pageFocusKeys = []string{
 	"j - scroll down",
 	"k - scroll up",
 	"^w - close tab",
-	"^n - new tab",
+	"^t - new tab",
 }
 
 var searchFocusKeys = []string{

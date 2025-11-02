@@ -21,6 +21,13 @@ func welcomeScreen(w int, h int) string {
 `)
 }
 
+func loadingScreen(w int, h int) string {
+	return lipgloss.NewStyle().Width(w).Height(h).
+		Foreground(BORDER).AlignHorizontal(lipgloss.Center).AlignVertical(lipgloss.Center).
+		Render(`o o o`)
+
+}
+
 type page struct {
 	ready    bool
 	viewport viewport.Model
@@ -57,12 +64,24 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.c.Content == "" {
 			p.viewport.SetContent(welcomeScreen(p.viewport.Width, p.viewport.Height))
 		} else {
-			p.viewport.SetContent(msg.c.Content)
+			if s, err := msg.renderMarkdown(p.viewport.Width - 1); err != nil {
+				cmds = append(cmds, asCmd(pageErrMsg{err: err}))
+			} else {
+				p.viewport.SetContent(s)
+			}
 		}
 
 	case pageErrMsg:
 		p.viewport.SetContent("Something went wrong :(\n\n\n" + msg.err.Error())
+
+	case onLoadMsg:
+		p.viewport.SetContent(loadingScreen(p.viewport.Width-4, p.viewport.Height))
+
+	default:
+		p.viewport, cmd = p.viewport.Update(msg)
+		cmds = append(cmds, cmd)
 	}
+
 	return p, tea.Batch(cmds...)
 }
 

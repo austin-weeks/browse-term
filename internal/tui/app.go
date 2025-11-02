@@ -93,13 +93,17 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, a.updateAllComponents(msg))
 
 	case searchConfirmedMsg:
-		resp, err := browser.FetchWebPage(msg.url)
-		if err != nil {
-			cmd = func() tea.Msg { return pageErrMsg{err: err} }
-		} else {
-			cmd = func() tea.Msg { return pageContentMsg{c: resp} }
-		}
-		cmds = append(cmds, cmd)
+		cmds = append(cmds, func() tea.Msg {
+			return onLoadMsg{}
+		})
+		cmds = append(cmds, func() tea.Msg {
+			resp, err := browser.FetchWebPage(msg.url)
+			if err != nil {
+				return pageErrMsg{err: err}
+			} else {
+				return pageContentMsg{c: resp}
+			}
+		})
 
 	case pageContentMsg:
 		a.tabBar, cmd = a.tabBar.Update(msg)
