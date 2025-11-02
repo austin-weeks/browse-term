@@ -11,7 +11,6 @@ type app struct {
 	focus focus
 
 	// Components
-	title     lipgloss.Style
 	tabBar    tea.Model
 	searchBar tea.Model
 	page      tea.Model
@@ -20,14 +19,9 @@ type app struct {
 
 // Get a new browse-term application
 func New() app {
-	title := lipgloss.NewStyle().Bold(true).Align(lipgloss.Center).
-		Foreground(TEXT_PRIMARY).SetString("Terminal Browser").
-		BorderBottom(true).BorderStyle(lipgloss.NormalBorder()).BorderForeground(BORDER)
-
 	return app{
 		focus: focusSearch,
 
-		title:     title,
 		tabBar:    newTabBar(),
 		searchBar: newSearchBar(),
 		page:      newPage(),
@@ -55,11 +49,9 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		msg.Height += 3
-		a.title = a.title.Width(msg.Width)
+		msg.Height += 2
 		a.keybinds.setWidth(msg.Width)
 
-		msg.Height -= lipgloss.Height(a.title.Render() + "\n")
 		msg.Height -= lipgloss.Height(a.keybinds.view(a.focus))
 
 		a.tabBar, cmd = a.tabBar.Update(msg)
@@ -149,8 +141,7 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (a app) View() string {
-	s := a.title.Render() + "\n"
-	s += a.tabBar.View()
+	s := a.tabBar.View()
 	s += a.searchBar.View()
 	s += a.page.View()
 	s += a.keybinds.view(a.focus)
