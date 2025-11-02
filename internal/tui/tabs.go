@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const NEW_TAB_TITLE = "Enter a URL"
+const NEW_TAB_TITLE = "New Tab"
 
 type tab struct {
 	title  string
@@ -15,10 +15,48 @@ type tab struct {
 	active bool
 }
 
+func getRegularBorder() lipgloss.Border {
+	border := lipgloss.RoundedBorder()
+	border.BottomLeft = "┴"
+	border.BottomRight = "┴"
+	return border
+}
+func getActiveBorder() lipgloss.Border {
+	border := lipgloss.RoundedBorder()
+	border.BottomLeft, border.BottomRight = border.BottomRight, border.BottomLeft
+	border.Bottom = ""
+	return border
+}
+
+const maxTabWidth = 14
+
+var (
+	tabStyle lipgloss.Style = lipgloss.NewStyle().
+			Foreground(TEXT_PRIMARY).Width(maxTabWidth).
+			Padding(0, 1).Align(lipgloss.Center).
+			Border(getRegularBorder()).BorderForeground(BORDER).
+			Transform(func(s string) string {
+			if len(s) > maxTabWidth {
+				s = s[:maxTabWidth-2] + "…"
+			}
+			return s
+		})
+
+	activeTabStyle lipgloss.Style = tabStyle.Border(getActiveBorder())
+)
+
+func (t tab) view() string {
+	style := tabStyle
+	if t.active {
+		style = activeTabStyle
+	}
+	return style.Render(t.title)
+}
+
 type tabBar struct {
 	ind   int
 	tabs  []tab
-	style lipgloss.Style
+	width int
 }
 
 func newTabBar() tabBar {
@@ -41,6 +79,9 @@ func (t tabBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		t.width = msg.Width
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "h":
@@ -107,16 +148,19 @@ func (t tabBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (t tabBar) View() string {
-	s := strings.Builder{}
+	var s []string
 	for _, tab := range t.tabs {
-		if tab.active {
-			s.WriteString("* " + tab.title + "   ")
-		} else {
-			s.WriteString(tab.title + "   ")
-		}
+		s = append(s, tab.view())
 	}
-	s.WriteString("\n")
-	return t.style.Render(s.String())
+
+	r := lipgloss.JoinHorizontal(lipgloss.Bottom, s...)
+
+	remWidth := t.width - lipgloss.Width(r)
+	if remWidth > 0 {
+		r += lipgloss.NewStyle().Foreground(BORDER).Render(strings.Repeat("─", remWidth))
+	}
+
+	return r + "\n"
 }
 
 func (t tabBar) focusCmd(newTab bool) tea.Cmd {

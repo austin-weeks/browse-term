@@ -1,3 +1,4 @@
+![Latest Version](https://img.shields.io/github/v/tag/austin-weeks/browse-term?label=latest)
 ![CICD](https://github.com/austin-weeks/browse-term/actions/workflows/CICD.yaml/badge.svg)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/austin-weeks/browse-term)
 [![Go Report Card](https://goreportcard.com/badge/github.com/austin-weeks/browse-term)](https://goreportcard.com/report/github.com/austin-weeks/browse-term)

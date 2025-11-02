@@ -11,6 +11,8 @@ var pageFocusKeys = []string{
 	"/ - search",
 	"h - tab left",
 	"l - tab right",
+	"j - scroll down",
+	"k - scroll up",
 	"^w - close tab",
 	"^n - new tab",
 }
@@ -18,7 +20,7 @@ var pageFocusKeys = []string{
 var searchFocusKeys = []string{
 	"^c - quit",
 	"esc - exit search",
-	"enter - go to URl",
+	"enter - go to URL",
 }
 
 type keybinds struct {
@@ -27,7 +29,7 @@ type keybinds struct {
 
 func newKeybinds() keybinds {
 	return keybinds{
-		style: lipgloss.NewStyle().Foreground(lipgloss.Color(TEXT_LIGHT)).Align(lipgloss.Center),
+		style: lipgloss.NewStyle().Foreground(TEXT_SECONDARY).Align(lipgloss.Center),
 	}
 }
 

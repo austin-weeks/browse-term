@@ -8,14 +8,12 @@ import (
 
 type page struct {
 	viewport viewport.Model
-	style    lipgloss.Style
 }
 
 func newPage() page {
 	viewport := viewport.New(0, 0)
-	viewport.Style = viewport.Style.Border(lipgloss.DoubleBorder())
+	viewport.Style = viewport.Style.Border(lipgloss.RoundedBorder()).BorderForeground(BORDER)
 	return page{
-		style:    lipgloss.NewStyle().Background(lipgloss.Color("black")).Border(lipgloss.NormalBorder()),
 		viewport: viewport,
 	}
 }
@@ -29,7 +27,6 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		p.style = p.style.Width(msg.Width).Height(msg.Height)
 		p.viewport.Width, p.viewport.Height = msg.Width, msg.Height
 
 	case tea.KeyMsg:

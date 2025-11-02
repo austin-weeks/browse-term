@@ -9,6 +9,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+// TODO - if a page errors, and we nav to another tab, then we go back, then the page is blank :(
+
 // TODO - clear cache after certain time to avoid memory growing endlessly (probably not something to worry about)
 
 // url -> WebPage
@@ -23,7 +25,13 @@ type WebPage struct {
 }
 
 func FetchWebPage(url string) (WebPage, error) {
-	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+	var prettyUrl string
+	if strings.HasPrefix(url, "http://") {
+		prettyUrl = strings.TrimLeft(url, "http://")
+	} else if strings.HasPrefix(url, "https://") {
+		prettyUrl = strings.TrimLeft(url, "https://")
+	} else {
+		prettyUrl = url
 		url = "https://" + url
 	}
 
@@ -48,16 +56,14 @@ func FetchWebPage(url string) (WebPage, error) {
 	page := string(bytes)
 
 	title := url
-	dom, err := html.Parse(strings.NewReader(page))
-	if err == nil {
-		t, err := extractTitle(dom)
-		if err == nil {
+	if dom, err := html.Parse(strings.NewReader(page)); err == nil {
+		if t, err := extractTitle(dom); err == nil {
 			title = t
 		}
 	}
 
 	webPage := WebPage{
-		Url:     url,
+		Url:     prettyUrl,
 		Title:   title,
 		Content: page,
 		Links:   []string{},

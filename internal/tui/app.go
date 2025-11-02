@@ -8,8 +8,7 @@ import (
 
 type app struct {
 	// State
-	cols, rows int
-	focus      focus
+	focus focus
 
 	// Components
 	title     lipgloss.Style
@@ -21,10 +20,14 @@ type app struct {
 
 // Get a new browse-term application
 func New() app {
+	title := lipgloss.NewStyle().Bold(true).Align(lipgloss.Center).
+		Foreground(TEXT_PRIMARY).SetString("Terminal Browser").
+		BorderBottom(true).BorderStyle(lipgloss.NormalBorder()).BorderForeground(BORDER)
+
 	return app{
 		focus: focusSearch,
 
-		title:     lipgloss.NewStyle().Bold(true).Align(lipgloss.Center).Foreground(lipgloss.Color("#080808")).SetString("Terminal Browser"),
+		title:     title,
 		tabBar:    newTabBar(),
 		searchBar: newSearchBar(),
 		page:      newPage(),
@@ -52,9 +55,9 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		a.cols, a.rows = msg.Width, msg.Height
-		a.title = a.title.Width(a.cols)
-		a.keybinds.setWidth(a.cols)
+		msg.Height += 3
+		a.title = a.title.Width(msg.Width)
+		a.keybinds.setWidth(msg.Width)
 
 		msg.Height -= lipgloss.Height(a.title.Render() + "\n")
 		msg.Height -= lipgloss.Height(a.keybinds.view(a.focus))
@@ -100,9 +103,11 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case searchConfirmedMsg:
 		resp, err := browser.FetchWebPage(msg.url)
 		if err != nil {
-			cmds = append(cmds, func() tea.Msg { return pageErrMsg{err: err} })
+			cmd = func() tea.Msg { return pageErrMsg{err: err} }
+		} else {
+			cmd = func() tea.Msg { return pageContentMsg{c: resp} }
 		}
-		cmds = append(cmds, func() tea.Msg { return pageContentMsg{c: resp} })
+		cmds = append(cmds, cmd)
 
 	case pageContentMsg:
 		a.tabBar, cmd = a.tabBar.Update(msg)

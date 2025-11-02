@@ -12,12 +12,15 @@ type searchBar struct {
 }
 
 func newSearchBar() searchBar {
+	// TODO - truncate input text content
 	input := textinput.New()
-	input.Placeholder = "Type a URL"
-	input.Prompt = ""
+	input.Prompt = "https:// "
+	input.PromptStyle = input.PromptStyle.Foreground(TEXT_SECONDARY)
+
+	style := lipgloss.NewStyle().BorderForeground(BORDER).Border(lipgloss.RoundedBorder()).Foreground(TEXT_PRIMARY)
 
 	return searchBar{
-		style: lipgloss.NewStyle(),
+		style: style,
 		input: input,
 	}
 }
@@ -32,6 +35,10 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		withBorders := msg.Width - 2
+		s.style = s.style.Width(withBorders)
+
 	case focusChangedMsg:
 		if msg.target != focusSearch {
 			break
@@ -81,7 +88,8 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s searchBar) View() string {
-	return s.input.View() + "\n"
+	v := s.input.View()
+	return s.style.Render(v) + "\n"
 }
 
 func (s searchBar) loseFocus() tea.Cmd {
