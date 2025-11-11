@@ -1,3 +1,4 @@
+// Package tui - browse-term's terminal user interface.
 package tui
 
 import (
@@ -11,18 +12,16 @@ type app struct {
 	focus focus
 
 	// Components
-	tabBar    tea.Model
 	searchBar tea.Model
 	page      tea.Model
 	keybinds  keybinds
 }
 
-// Get a new browse-term application
+// New browse-term application
 func New() app {
 	return app{
 		focus: focusSearch,
 
-		tabBar:    newTabBar(),
 		searchBar: newSearchBar(),
 		page:      newPage(),
 		keybinds:  newKeybinds(),
@@ -31,7 +30,6 @@ func New() app {
 
 func (a app) Init() tea.Cmd {
 	return tea.Batch(
-		a.tabBar.Init(),
 		a.searchBar.Init(),
 		a.page.Init(),
 		func() tea.Msg {
@@ -49,14 +47,10 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		msg.Height += 2
+		msg.Height += 1
 		a.keybinds.setWidth(msg.Width)
 
 		msg.Height -= lipgloss.Height(a.keybinds.view(a.focus))
-
-		a.tabBar, cmd = a.tabBar.Update(msg)
-		cmds = append(cmds, cmd)
-		msg.Height -= lipgloss.Height(a.tabBar.View())
 
 		a.searchBar, cmd = a.searchBar.Update(msg)
 		cmds = append(cmds, cmd)
@@ -81,8 +75,6 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				})
 			}
-			a.tabBar, cmd = a.tabBar.Update(msg)
-			cmds = append(cmds, cmd)
 
 			a.page, cmd = a.page.Update(msg)
 			cmds = append(cmds, cmd)
@@ -106,16 +98,12 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		})
 
 	case pageContentMsg:
-		a.tabBar, cmd = a.tabBar.Update(msg)
-		cmds = append(cmds, cmd)
 		a.searchBar, cmd = a.searchBar.Update(msg)
 		cmds = append(cmds, cmd)
 		a.page, cmd = a.page.Update(msg)
 		cmds = append(cmds, cmd)
 
 	case pageErrMsg:
-		a.tabBar, cmd = a.tabBar.Update(msg)
-		cmds = append(cmds, cmd)
 		a.page, cmd = a.page.Update(msg)
 		cmds = append(cmds, cmd)
 
@@ -132,7 +120,8 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 
 		a.page, cmd = a.page.Update(pageContentMsg{
-			c: browser.WebPage{Content: ""}},
+			c: browser.WebPage{Content: ""},
+		},
 		)
 		cmds = append(cmds, cmd)
 
@@ -145,8 +134,7 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (a app) View() string {
-	s := a.tabBar.View()
-	s += a.searchBar.View()
+	s := a.searchBar.View()
 	s += a.page.View()
 	s += a.keybinds.view(a.focus)
 
@@ -158,8 +146,6 @@ func (a *app) updateAllComponents(msg tea.Msg) tea.Cmd {
 		cmd  tea.Cmd
 		cmds []tea.Cmd
 	)
-	a.tabBar, cmd = a.tabBar.Update(msg)
-	cmds = append(cmds, cmd)
 
 	a.searchBar, cmd = a.searchBar.Update(msg)
 	cmds = append(cmds, cmd)

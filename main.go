@@ -12,7 +12,7 @@ import (
 
 func main() {
 	a := tui.New()
-	p := tea.NewProgram(a)
+	p := tea.NewProgram(a, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -24,5 +24,4 @@ func main() {
 }
 
 func checkLatestVersion() {
-
 }

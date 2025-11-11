@@ -9,12 +9,8 @@ import (
 var pageFocusKeys = []string{
 	"q - quit",
 	"/ - search",
-	"h - tab left",
-	"l - tab right",
 	"j - scroll down",
 	"k - scroll up",
-	"^w - close tab",
-	"^t - new tab",
 }
 
 var searchFocusKeys = []string{

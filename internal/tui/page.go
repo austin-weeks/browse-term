@@ -3,6 +3,7 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -25,12 +26,12 @@ func loadingScreen(w int, h int) string {
 	return lipgloss.NewStyle().Width(w).Height(h).
 		Foreground(BORDER).AlignHorizontal(lipgloss.Center).AlignVertical(lipgloss.Center).
 		Render(`o o o`)
-
 }
 
 type page struct {
-	ready    bool
-	viewport viewport.Model
+	ready     bool
+	viewport  viewport.Model
+	contentFn func(w int, h int) (string, error)
 }
 
 func newPage() page {
@@ -40,6 +41,7 @@ func newPage() page {
 		viewport: viewport,
 	}
 }
+
 func (p page) Init() tea.Cmd {
 	return nil
 }
@@ -53,7 +55,11 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		p.viewport.Width, p.viewport.Height = msg.Width, msg.Height
 		if !p.ready {
 			p.ready = true
-			p.viewport.SetContent(welcomeScreen(msg.Width-5, msg.Height))
+			p.setContent(func(w int, h int) (string, error) {
+				return welcomeScreen(w-5, h), nil
+			})
+		} else {
+			cmds = append(cmds, p.setContent(p.contentFn))
 		}
 
 	case tea.KeyMsg:
@@ -62,13 +68,14 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case pageContentMsg:
 		if msg.c.Content == "" {
-			p.viewport.SetContent(welcomeScreen(p.viewport.Width, p.viewport.Height))
+			p.setContent(func(w int, h int) (string, error) {
+				return welcomeScreen(w, h), nil
+			})
 		} else {
-			if s, err := msg.renderMarkdown(p.viewport.Width - 1); err != nil {
-				cmds = append(cmds, asCmd(pageErrMsg{err: err}))
-			} else {
-				p.viewport.SetContent(s)
-			}
+			cmd = p.setContent(func(w int, h int) (string, error) {
+				return renderMarkdown(msg.c.Content, w)
+			})
+			cmds = append(cmds, cmd)
 		}
 
 	case pageErrMsg:
@@ -87,4 +94,25 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (p page) View() string {
 	return p.viewport.View() + "\n"
+}
+
+func renderMarkdown(content string, w int) (string, error) {
+	r, err := glamour.NewTermRenderer(
+		glamour.WithStylePath("dark"),
+		glamour.WithWordWrap(w),
+	)
+	if err != nil {
+		return "", err
+	}
+	return r.Render(content)
+}
+
+func (p *page) setContent(fn func(w int, h int) (string, error)) tea.Cmd {
+	p.contentFn = fn
+	s, err := fn(p.viewport.Width, p.viewport.Height)
+	if err != nil {
+		return asCmd(pageErrMsg{err: err})
+	}
+	p.viewport.SetContent(s)
+	return nil
 }
