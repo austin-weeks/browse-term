@@ -15,9 +15,9 @@ func newSearchBar() searchBar {
 	// TODO - truncate input text content
 	input := textinput.New()
 	input.Prompt = "https:// "
-	input.PromptStyle = input.PromptStyle.Foreground(TEXT_SECONDARY)
+	input.PromptStyle = input.PromptStyle.Foreground(TEXTSECONDARY)
 
-	style := lipgloss.NewStyle().BorderForeground(BORDER).Border(lipgloss.RoundedBorder()).Foreground(TEXT_PRIMARY)
+	style := lipgloss.NewStyle().BorderForeground(BORDER).Border(lipgloss.RoundedBorder()).Foreground(TEXTPRIMARY)
 
 	return searchBar{
 		style: style,
@@ -58,7 +58,7 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			s.input.Blur()
 			cmds = append(cmds,
-				func() tea.Msg { return searchConfirmedMsg{url: s.input.Value()} },
+				func() tea.Msg { return triggerFetchMsg{url: s.input.Value()} },
 				s.loseFocus(),
 			)
 		default:
@@ -66,18 +66,8 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, cmd)
 		}
 
-	case tabChangedMsg:
-		s.input.SetValue(msg.url)
-		if msg.newTab {
-			cmds = append(cmds, func() tea.Msg {
-				return focusChangedMsg{
-					target: focusSearch,
-				}
-			})
-		}
-
 	case pageContentMsg:
-		s.input.SetValue(msg.c.Url)
+		s.input.SetValue(msg.c.URL)
 
 	default:
 		s.input, cmd = s.input.Update(msg)

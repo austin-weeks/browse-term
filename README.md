@@ -10,11 +10,11 @@ A mini web browser for you terminal.
 
 ## Features (planned)
 
-- [ ] Multiple tabs
-- [ ] HTML fetching
-- [ ] Render page as markdown
-- [ ] Navigation keybinds
-- [ ] Tree for page links
+- [x] HTML fetching
+- [x] Render page as markdown
+- [x] Navigation keybinds
+- [x] Tree for page links
+- [ ] Rendering JavaScript
 
 ## Installation
 

@@ -12,13 +12,14 @@ type onLoadMsg struct{}
 const (
 	focusSearch focus = iota
 	focusPage
+	focusLinks
 )
 
 type focusChangedMsg struct {
 	target focus
 }
 
-type searchConfirmedMsg struct {
+type triggerFetchMsg struct {
 	url string
 }
 
@@ -29,11 +30,6 @@ type pageErrMsg struct {
 // Sent with the focused page changes
 type pageContentMsg struct {
 	c browser.WebPage
-}
-
-type tabChangedMsg struct {
-	url    string
-	newTab bool
 }
 
 func asCmd(msg any) tea.Cmd {

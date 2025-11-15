@@ -17,8 +17,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Clear the screen
-
 	// Check for latest version of app
 	checkLatestVersion()
 }

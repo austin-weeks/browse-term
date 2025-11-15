@@ -1,38 +1,37 @@
+// Package browser provides methods for fetching websites for display in browse-term.
 package browser
 
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"golang.org/x/net/html"
 )
 
-// TODO - if a page errors, and we nav to another tab, then we go back, then the page is blank :(
-
-// TODO - clear cache after certain time to avoid memory growing endlessly (probably not something to worry about)
-
 // url -> WebPage
 var webPages map[string]WebPage = make(map[string]WebPage)
 
-// Represents a website page
+// WebPage represents a website page
 type WebPage struct {
-	Url     string
+	URL     string
 	Title   string
 	Content string
-	Links   []string
+	Links   []Link
 }
 
-func FetchWebPage(url string) (WebPage, error) {
-	var prettyUrl string
-	if strings.HasPrefix(url, "http://") {
-		prettyUrl = strings.TrimLeft(url, "http://")
-	} else if strings.HasPrefix(url, "https://") {
-		prettyUrl = strings.TrimLeft(url, "https://")
-	} else {
-		prettyUrl = url
-		url = "https://" + url
+func FetchWebPage(path string) (WebPage, error) {
+	path, _ = strings.CutPrefix(path, "https://")
+	path, _ = strings.CutPrefix(path, "http://")
+	prettyURL := path
+	path = "https://" + path
+
+	URL, err := url.Parse(path)
+	if err != nil {
+		return WebPage{}, err
 	}
+	url := URL.String()
 
 	if page, ok := webPages[url]; ok {
 		return page, nil
@@ -48,52 +47,35 @@ func FetchWebPage(url string) (WebPage, error) {
 	if err != nil {
 		return WebPage{}, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint
 
 	if resp.StatusCode != http.StatusOK {
 		return WebPage{}, fmt.Errorf("Non-200 response: %v", resp.StatusCode)
 	}
 
-	title := url
+	var title string
 	dom, err := html.Parse(resp.Body)
 	if err == nil {
 		if t, err := extractTitle(dom); err == nil {
 			title = t
 		}
+	} else {
+		title = url
 	}
+
 	md, err := toMarkdown(dom)
 	if err != nil {
 		return WebPage{}, err
 	}
 
+	links := extractLinks(dom, URL)
+
 	webPage := WebPage{
-		Url:     prettyUrl,
+		URL:     prettyURL,
 		Title:   title,
 		Content: md,
-		Links:   []string{},
+		Links:   links,
 	}
 	webPages[url] = webPage
 	return webPage, nil
-}
-
-func extractTitle(parent *html.Node) (string, error) {
-	// Base Case
-	if parent.Type == html.ElementNode && parent.Data == "title" {
-		var title string
-		for child := parent.FirstChild; child != nil; child = child.NextSibling {
-			if child.Type == html.TextNode {
-				title += child.Data
-			}
-		}
-		return strings.TrimSpace(title), nil
-	}
-
-	for child := parent.FirstChild; child != nil; child = child.NextSibling {
-		title, err := extractTitle(child)
-		if err == nil && title != "" {
-			return title, nil
-		}
-	}
-
-	return "", fmt.Errorf("title element not found")
 }

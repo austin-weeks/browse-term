@@ -79,7 +79,14 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case pageErrMsg:
-		p.viewport.SetContent("Something went wrong :(\n\n\n" + msg.err.Error())
+		p.setContent(func(w int, h int) (string, error) {
+			text := "#Something went wrong :(\n\n\n" + msg.err.Error()
+			s, err := renderMarkdown(text, w)
+			if err != nil {
+				return text, nil
+			}
+			return s, nil
+		})
 
 	case onLoadMsg:
 		p.viewport.SetContent(loadingScreen(p.viewport.Width-4, p.viewport.Height))
