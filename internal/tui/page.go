@@ -88,7 +88,7 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case pageErrMsg:
 		p.refreshContent = false
 		p.setContent(func(w int, h int, p page) (string, error) {
-			text := "#Something went wrong :(\n\n\n" + msg.err.Error()
+			text := "# Something went wrong :(\n\n\n" + msg.err.Error()
 			s, err := renderMarkdown(text, w)
 			if err != nil {
 				return text, nil
