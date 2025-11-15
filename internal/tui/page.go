@@ -73,6 +73,7 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 
 	case pageContentMsg:
+		p.viewport.GotoTop()
 		p.refreshContent = false
 		if msg.c.Content == "" {
 			p.setContent(func(w int, h int, p page) (string, error) {
@@ -86,6 +87,7 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case pageErrMsg:
+		p.viewport.GotoTop()
 		p.refreshContent = false
 		p.setContent(func(w int, h int, p page) (string, error) {
 			text := "# Something went wrong :(\n\n\n" + msg.err.Error()
@@ -97,6 +99,7 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		})
 
 	case onLoadMsg:
+		p.viewport.GotoTop()
 		p.refreshContent = true
 		p.setContent(func(w, h int, p page) (string, error) {
 			s := p.spinner.View()
