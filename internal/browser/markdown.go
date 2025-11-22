@@ -12,7 +12,7 @@ func toMarkdown(n *html.Node) (string, error) {
 	}
 	md := string(b)
 	if md == "" {
-		md = "# Looks like this page is emtpy :(\n\nThere's nothing to see here - the site probably requires JavaScript to display its contents"
+		md = "# Looks like this page is empty :(\n\nThere's nothing to see here - the site probably requires JavaScript to display its contents"
 	}
 	return md, nil
 

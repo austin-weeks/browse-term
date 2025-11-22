@@ -55,7 +55,6 @@ func (l linkTable) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-	// TODO - handle window resizing
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc", "q":

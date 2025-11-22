@@ -33,13 +33,27 @@ type page struct {
 	contentFn      func(w int, h int, p page) (string, error)
 }
 
-func newPage() page {
+func newPage(jsEnabled bool) page {
 	viewport := viewport.New(0, 0)
 	viewport.Style = viewport.Style.Border(lipgloss.RoundedBorder()).BorderForeground(BORDER)
 	spin := spinner.New()
-	spin.Spinner = spinner.Spinner{
-		Frames: []string{"∙∙∙∙∙∙∙", "●∙∙∙∙∙∙", "∙●∙∙∙∙∙", "∙∙●∙∙∙∙", "∙∙∙●∙∙∙", "∙∙∙∙●∙∙", "∙∙∙∙∙●∙", "∙∙∙∙∙∙●"},
-		FPS:    time.Second / 9, //nolint:mnd
+	if jsEnabled {
+		spin.Spinner = spinner.Spinner{
+			Frames: []string{
+				" Rendering  ",
+				" Rendering  ",
+				" Rendering  ",
+				" Rendering  ",
+				" Rendering  ",
+				" Rendering  ",
+			},
+			FPS: time.Second / 13, //nolint:mnd
+		}
+	} else {
+		spin.Spinner = spinner.Spinner{
+			Frames: []string{"∙∙∙∙∙∙∙", "●∙∙∙∙∙∙", "∙●∙∙∙∙∙", "∙∙●∙∙∙∙", "∙∙∙●∙∙∙", "∙∙∙∙●∙∙", "∙∙∙∙∙●∙", "∙∙∙∙∙∙●"},
+			FPS:    time.Second / 9, //nolint:mnd
+		}
 	}
 
 	return page{

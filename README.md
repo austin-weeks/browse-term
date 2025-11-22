@@ -34,4 +34,4 @@ go build -o browse-term
 - [x] Render page as markdown
 - [x] Navigation keybinds
 - [x] Tree for page links
-- [ ] Rendering JavaScript
+- [x] Rendering JavaScript

@@ -11,7 +11,8 @@ import (
 // TODO - determine a way to show the possible links and navigate to them
 type app struct {
 	// State
-	focus focus
+	focus     focus
+	jsEnabled bool
 
 	// Components
 	searchBar tea.Model
@@ -21,12 +22,13 @@ type app struct {
 }
 
 // New browse-term application
-func New() app {
+func New(enableJS bool) app {
 	return app{
-		focus: focusSearch,
+		focus:     focusSearch,
+		jsEnabled: enableJS,
 
 		searchBar: newSearchBar(),
-		page:      newPage(),
+		page:      newPage(enableJS),
 		keybinds:  newKeybinds(),
 		links:     newLinkTable(),
 	}
@@ -108,7 +110,7 @@ func (a app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return onLoadMsg{}
 		})
 		cmds = append(cmds, func() tea.Msg {
-			resp, err := browser.FetchWebPage(msg.url)
+			resp, err := browser.FetchWebPage(msg.url, a.jsEnabled)
 			if err != nil {
 				return pageErrMsg{err: err}
 			} else {

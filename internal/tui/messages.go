@@ -29,7 +29,7 @@ type pageErrMsg struct {
 
 // Sent with the focused page changes
 type pageContentMsg struct {
-	c browser.WebPage
+	c *browser.WebPage
 }
 
 func asCmd(msg any) tea.Cmd {
