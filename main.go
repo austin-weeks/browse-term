@@ -1,18 +1,21 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
+	"io"
+	"net/http"
 	"os"
+	"runtime/debug"
+	"strings"
 
 	"github.com/austin-weeks/browse-term/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// TODO - tui should be restructured to use new structs rather than mutating things
-// TODO - tui should be restructured to use non-interface types for sub-components - didn't need to be this abstract
-
 func main() {
+	ch := make(chan string, 1)
+	go checkLatestVersion(ch)
 	js, err := checkJSEnabled()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -22,11 +25,14 @@ func main() {
 	a := tui.New(js)
 	p := tea.NewProgram(a, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 
-	// Check for latest version of app
-	checkLatestVersion()
+	select {
+	case msg := <-ch:
+		fmt.Print(msg)
+	default:
+	}
 }
 
 func checkJSEnabled() (bool, error) {
@@ -42,5 +48,50 @@ func checkJSEnabled() (bool, error) {
 	return enabled, nil
 }
 
-func checkLatestVersion() {
+func checkLatestVersion(ch chan<- string) {
+	sprintErr := func(msg string) string {
+		return fmt.Sprintf("Could not check for latest version. Error: %s\n", msg)
+	}
+
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		ch <- sprintErr("could not read build info")
+		return
+	}
+	curVer := info.Main.Version
+
+	type entry struct {
+		Tag string `json:"name"`
+	}
+	resp, err := http.Get("https://api.github.com/repos/austin-weeks/browse-term/tags")
+	if err != nil {
+		ch <- sprintErr(err.Error())
+		return
+	}
+	defer resp.Body.Close() // nolint
+	p, err := io.ReadAll(resp.Body)
+	if err != nil {
+		ch <- sprintErr(err.Error())
+		return
+	}
+	var entries []entry
+	err = json.Unmarshal(p, &entries)
+	if err != nil {
+		ch <- sprintErr(err.Error())
+		return
+	}
+	if len(entries) == 0 {
+		ch <- sprintErr("no tags found")
+		return
+	}
+	newest := entries[0].Tag
+
+	if curVer != newest {
+		var s strings.Builder
+		s.WriteString("\nA new version of browse-term is available!\n\n")
+		s.WriteString(fmt.Sprintf("%s -> %s\n\n", curVer, newest))
+		s.WriteString("To update, run:\n")
+		s.WriteString("  go install github.com/austin-weeks/browse-term@latest\n")
+		ch <- s.String()
+	}
 }
