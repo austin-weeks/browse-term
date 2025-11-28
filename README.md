@@ -17,11 +17,17 @@ A minimal web browser for your terminal.
 - A [Nerd Font](https://www.nerdfonts.com/) (recommended)
 - A Chromium browser installed (optional, for JavaScript execution)
 
-### Install with Go
+### Install with Go (Recommended)
+
+Install the latest version with the [Go](https://go.dev/doc/install) CLI.
 
 ```bash
 go install github.com/austin-weeks/browse-term@latest
 ```
+
+### Install a Pre-Built Binary
+
+Alternatively, you can download a pre-built binary from [releases](https://github.com/austin-weeks/browse-term/releases).
 
 ## Usage
 
@@ -52,4 +58,8 @@ browse-term --no-js
 - [ ] Theme Configuration
 - [ ] CSS Support
 - [ ] Image Rendering
-- [ ] Prebuilt Binaries in Releases
+- [x] Prebuilt Binaries in Releases
+
+## Contributing
+
+Contributions are welcome! Please open an issue for feature requests or bug reports.
