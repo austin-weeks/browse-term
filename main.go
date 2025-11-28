@@ -59,6 +59,10 @@ func checkLatestVersion(ch chan<- string) {
 		return
 	}
 	curVer := info.Main.Version
+	// Silence in development
+	if curVer == "(devel)" {
+		return
+	}
 
 	type entry struct {
 		Tag string `json:"name"`

@@ -6,16 +6,17 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const prompt = "https:// "
+
 type searchBar struct {
 	style lipgloss.Style
 	input textinput.Model
 }
 
 func newSearchBar() searchBar {
-	// TODO - truncate input text content
 	input := textinput.New()
-	input.Prompt = "https:// "
-	input.PromptStyle = input.PromptStyle.Foreground(TEXTSECONDARY)
+	input.Prompt = prompt
+	input.PromptStyle = input.PromptStyle.Foreground(TEXTSECONDARY).PaddingLeft(1)
 
 	style := lipgloss.NewStyle().BorderForeground(BORDER).Border(lipgloss.RoundedBorder()).Foreground(TEXTPRIMARY)
 
@@ -36,8 +37,9 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		withBorders := msg.Width - 2
+		withBorders := msg.Width - 3
 		s.style = s.style.Width(withBorders)
+		s.input.Width = withBorders - len(prompt) - 2
 
 	case focusChangedMsg:
 		if msg.target != focusSearch {
