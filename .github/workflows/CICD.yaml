@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   Run-Checks:
     uses: ./.github/workflows/run-checks.yaml
@@ -12,8 +15,6 @@ jobs:
   Update-Tag:
     needs: Run-Checks
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     outputs:
       tag: ${{ steps.update_tag.outputs.tag }}
     steps:
