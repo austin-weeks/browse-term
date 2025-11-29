@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"github.com/austin-weeks/browse-term/internal/themes"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/lipgloss"
@@ -42,11 +43,11 @@ type keybinds struct {
 	help  help.Model
 }
 
-func newKeybinds() keybinds {
+func newKeybinds(theme themes.Theme) keybinds {
 	help := help.New()
-	help.Styles.ShortKey = help.Styles.ShortKey.Foreground(TEXTPRIMARY)
-	help.Styles.ShortDesc = help.Styles.ShortDesc.Foreground(TEXTSECONDARY)
-	help.Styles.ShortSeparator = help.Styles.ShortSeparator.Foreground(TEXTSECONDARY)
+	help.Styles.ShortKey = help.Styles.ShortKey.Foreground(theme.TextPrimary())
+	help.Styles.ShortDesc = help.Styles.ShortDesc.Foreground(themes.TextSecondary)
+	help.Styles.ShortSeparator = help.Styles.ShortSeparator.Foreground(themes.TextSecondary)
 	return keybinds{
 		help: help,
 	}
@@ -70,6 +71,6 @@ func (k keybinds) view(focus focus) string {
 		panic("unhandled focus")
 	}
 
-	s := k.help.ShortHelpView(keys) + "\n"
+	s := k.help.ShortHelpView(keys)
 	return lipgloss.PlaceHorizontal(k.width, lipgloss.Center, s)
 }

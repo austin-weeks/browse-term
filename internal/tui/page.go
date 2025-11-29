@@ -3,16 +3,17 @@ package tui
 import (
 	"time"
 
+	"github.com/austin-weeks/browse-term/internal/browser"
+	"github.com/austin-weeks/browse-term/internal/themes"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 )
 
-func welcomeScreen(w int, h int) string {
+func welcomeScreen(w int, h int, theme themes.Theme) string {
 	return lipgloss.NewStyle().Width(w).Height(h).
-		Foreground(BORDER).AlignHorizontal(lipgloss.Center).AlignVertical(lipgloss.Center).
+		Foreground(theme.HighlightColor()).AlignHorizontal(lipgloss.Center).AlignVertical(lipgloss.Center).
 		Render(`
  /$$$$$$$                                                     /$$$$$$$$                               
 | $$__  $$                                                   |__  $$__/                               
@@ -26,6 +27,8 @@ func welcomeScreen(w int, h int) string {
 }
 
 type page struct {
+	theme themes.Theme
+
 	ready          bool
 	refreshContent bool
 	viewport       viewport.Model
@@ -33,9 +36,9 @@ type page struct {
 	contentFn      func(w int, h int, p page) (string, error)
 }
 
-func newPage(jsEnabled bool) page {
+func newPage(jsEnabled bool, theme themes.Theme) page {
 	viewport := viewport.New(0, 0)
-	viewport.Style = viewport.Style.Border(lipgloss.RoundedBorder()).BorderForeground(BORDER)
+	viewport.Style = viewport.Style.Border(lipgloss.RoundedBorder()).BorderForeground(theme.HighlightColor())
 	spin := spinner.New()
 	if jsEnabled {
 		spin.Spinner = spinner.Spinner{
@@ -57,6 +60,7 @@ func newPage(jsEnabled bool) page {
 	}
 
 	return page{
+		theme:    theme,
 		viewport: viewport,
 		spinner:  spin,
 	}
@@ -76,7 +80,7 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !p.ready {
 			p.ready = true
 			p.setContent(func(w int, h int, p page) (string, error) {
-				return welcomeScreen(w-5, h), nil
+				return welcomeScreen(w-5, h, p.theme), nil
 			})
 		} else {
 			cmds = append(cmds, p.setContent(p.contentFn))
@@ -91,11 +95,11 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		p.refreshContent = false
 		if msg.c.Content == "" {
 			p.setContent(func(w int, h int, p page) (string, error) {
-				return welcomeScreen(w, h), nil
+				return welcomeScreen(w, h, p.theme), nil
 			})
 		} else {
 			cmd = p.setContent(func(w int, h int, p page) (string, error) {
-				return renderMarkdown(msg.c.Content, w)
+				return browser.RenderMarkdown(msg.c.Content, w, p.theme)
 			})
 			cmds = append(cmds, cmd)
 		}
@@ -105,7 +109,7 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		p.refreshContent = false
 		p.setContent(func(w int, h int, p page) (string, error) {
 			text := "# Something went wrong :(\n\n\n" + msg.err.Error()
-			s, err := renderMarkdown(text, w)
+			s, err := browser.RenderMarkdown(text, w, p.theme)
 			if err != nil {
 				return text, nil
 			}
@@ -136,17 +140,6 @@ func (p page) View() string {
 		p.setContent(p.contentFn)
 	}
 	return p.viewport.View() + "\n"
-}
-
-func renderMarkdown(content string, w int) (string, error) {
-	r, err := glamour.NewTermRenderer(
-		glamour.WithStylePath("dark"),
-		glamour.WithWordWrap(w),
-	)
-	if err != nil {
-		return "", err
-	}
-	return r.Render(content)
 }
 
 func (p *page) setContent(fn func(w int, h int, p page) (string, error)) tea.Cmd {

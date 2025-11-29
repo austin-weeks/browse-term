@@ -1,23 +1,26 @@
 package tui
 
 import (
+	"github.com/austin-weeks/browse-term/internal/themes"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
+
+const prompt = "https:// "
 
 type searchBar struct {
 	style lipgloss.Style
 	input textinput.Model
 }
 
-func newSearchBar() searchBar {
-	// TODO - truncate input text content
+func newSearchBar(theme themes.Theme) searchBar {
 	input := textinput.New()
-	input.Prompt = "https:// "
-	input.PromptStyle = input.PromptStyle.Foreground(TEXTSECONDARY)
+	input.Prompt = prompt
+	input.PromptStyle = input.PromptStyle.Foreground(themes.TextSecondary).PaddingLeft(1)
+	input.TextStyle = input.TextStyle.Foreground(theme.TextPrimary())
 
-	style := lipgloss.NewStyle().BorderForeground(BORDER).Border(lipgloss.RoundedBorder()).Foreground(TEXTPRIMARY)
+	style := lipgloss.NewStyle().BorderForeground(theme.HighlightColor()).Border(lipgloss.RoundedBorder()).Foreground(theme.TextPrimary())
 
 	return searchBar{
 		style: style,
@@ -36,8 +39,9 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		withBorders := msg.Width - 2
+		withBorders := msg.Width - 3
 		s.style = s.style.Width(withBorders)
+		s.input.Width = withBorders - len(prompt) - 2
 
 	case focusChangedMsg:
 		if msg.target != focusSearch {

@@ -20,7 +20,7 @@ jobs:
     env:
       GOOS: ${{ matrix.os }}
       GOARCH: ${{ matrix.arch }}
-      NAME: browse-term-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }}
+      NAME: browse-term-${{ matrix.os == 'darwin' && 'macOS' || matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5

@@ -3,6 +3,7 @@ package tui
 
 import (
 	"github.com/austin-weeks/browse-term/internal/browser"
+	"github.com/austin-weeks/browse-term/internal/config"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	overlay "github.com/rmhubbert/bubbletea-overlay"
@@ -22,15 +23,15 @@ type app struct {
 }
 
 // New browse-term application
-func New(enableJS bool) app {
+func New(enableJS bool, config config.Config) app {
 	return app{
 		focus:     focusSearch,
 		jsEnabled: enableJS,
 
-		searchBar: newSearchBar(),
-		page:      newPage(enableJS),
-		keybinds:  newKeybinds(),
-		links:     newLinkTable(),
+		searchBar: newSearchBar(config.Theme),
+		page:      newPage(enableJS, config.Theme),
+		keybinds:  newKeybinds(config.Theme),
+		links:     newLinkTable(config.Theme),
 	}
 }
 
