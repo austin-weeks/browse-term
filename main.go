@@ -9,6 +9,7 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/austin-weeks/browse-term/internal/config"
 	"github.com/austin-weeks/browse-term/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -22,7 +23,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	a := tui.New(js)
+	config := config.LoadConfig()
+
+	a := tui.New(js, config)
 	p := tea.NewProgram(a, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Println(err)

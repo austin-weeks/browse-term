@@ -7,7 +7,9 @@ require (
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
+	github.com/charmbracelet/log v0.4.2
 	github.com/chromedp/chromedp v0.14.2
+	github.com/goccy/go-yaml v1.18.0
 	github.com/rmhubbert/bubbletea-overlay v0.5.0
 )
 
@@ -23,6 +25,7 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250725192818-e39067aee2d2 // indirect
+	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.4.0 // indirect
@@ -31,6 +34,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/yuin/goldmark v1.7.13 // indirect
 	github.com/yuin/goldmark-emoji v1.0.5 // indirect
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/term v0.36.0 // indirect
 )
 

@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"github.com/austin-weeks/browse-term/internal/themes"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -13,12 +14,13 @@ type searchBar struct {
 	input textinput.Model
 }
 
-func newSearchBar() searchBar {
+func newSearchBar(theme themes.Theme) searchBar {
 	input := textinput.New()
 	input.Prompt = prompt
-	input.PromptStyle = input.PromptStyle.Foreground(TEXTSECONDARY).PaddingLeft(1)
+	input.PromptStyle = input.PromptStyle.Foreground(themes.TextSecondary).PaddingLeft(1)
+	input.TextStyle = input.TextStyle.Foreground(theme.TextPrimary())
 
-	style := lipgloss.NewStyle().BorderForeground(BORDER).Border(lipgloss.RoundedBorder()).Foreground(TEXTPRIMARY)
+	style := lipgloss.NewStyle().BorderForeground(theme.HighlightColor()).Border(lipgloss.RoundedBorder()).Foreground(theme.TextPrimary())
 
 	return searchBar{
 		style: style,

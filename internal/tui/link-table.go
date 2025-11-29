@@ -2,21 +2,20 @@ package tui
 
 import (
 	"github.com/austin-weeks/browse-term/internal/browser"
+	"github.com/austin-weeks/browse-term/internal/themes"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-var tableBaseStyle = lipgloss.NewStyle().
-	BorderStyle(lipgloss.RoundedBorder()).
-	BorderForeground(BORDER)
-
 type linkTable struct {
+	theme themes.Theme
+
 	table table.Model
 	links []browser.Link
 }
 
-func newLinkTable() linkTable {
+func newLinkTable(theme themes.Theme) linkTable {
 	columns := []table.Column{
 		{Title: "Link", Width: 40},
 		{Title: "URL", Width: 60},
@@ -31,16 +30,17 @@ func newLinkTable() linkTable {
 	s := table.DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(BORDER).
+		BorderForeground(theme.HighlightColor()).
 		BorderBottom(true).
 		Bold(true)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color(BORDER)).
-		Background(GREY600).
+		Foreground(lipgloss.Color(theme.HighlightColor())).
+		Background(themes.TextTertiary).
 		Bold(false)
 	t.SetStyles(s)
 
 	return linkTable{
+		theme: theme,
 		table: t,
 		links: []browser.Link{},
 	}
@@ -91,7 +91,9 @@ func (l linkTable) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (l linkTable) View() string {
-	return tableBaseStyle.Render(l.table.View()) + "\n"
+	return lipgloss.NewStyle().
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(l.theme.HighlightColor()).Render(l.table.View()) + "\n"
 }
 
 func (l *linkTable) updateRows(links []browser.Link) {

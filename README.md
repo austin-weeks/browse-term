@@ -49,14 +49,32 @@ You can disable JavaScript with the `--no-js` flag:
 browse-term --no-js
 ```
 
+## Configuration
+
+BrowseTerm can be configured via a `yaml` file.
+
+On startup, it will look for a config file at `~/.config/browse-term/config.yaml`
+
+Example `config.yaml`
+
+```yaml
+theme: catppuccin-mocha
+```
+
+### Options
+
+| Name    | Description           | Choices                                                                                                                                | Default       |
+| ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `theme` | Sets the color scheme | `dark`, `light`, `tokyo-night`, `pink`, `dracula`, `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha` | `tokyo-night` |
+
 ## Project Roadmap
 
 - [x] HTML as rendered markdown
 - [x] Navigation keybinds
 - [x] Tree for page links
 - [x] JavaScript execution on page load
-- [ ] Theme Configuration
-- [ ] CSS Support
+- [x] Theme Configuration
+- [ ] Page history & navigation
 - [ ] Image Rendering
 - [x] Prebuilt Binaries in Releases
 
