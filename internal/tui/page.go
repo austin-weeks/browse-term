@@ -87,6 +87,7 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyMsg:
+		// TODO: make 'g' go to top and 'G' go to bottom
 		p.viewport, cmd = p.viewport.Update(msg)
 		cmds = append(cmds, cmd)
 
@@ -99,7 +100,7 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			})
 		} else {
 			cmd = p.setContent(func(w int, h int, p page) (string, error) {
-				return browser.RenderMarkdown(msg.c.Content, w, p.theme)
+				return msg.c.RenderPage(w, p.theme)
 			})
 			cmds = append(cmds, cmd)
 		}

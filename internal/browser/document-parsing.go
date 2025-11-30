@@ -50,6 +50,43 @@ func extractLinks(node *html.Node, baseURL *url.URL) []Link {
 	return links
 }
 
+func extractImages(node *html.Node, baseURL *url.URL) []image {
+	var images []image
+	if node.Type == html.ElementNode && node.Data == "img" {
+		var path, alt, title string
+		for _, attr := range node.Attr {
+			switch attr.Key {
+			case "src":
+				path = attr.Val
+			case "alt":
+				alt = attr.Val
+			case "title":
+				title = attr.Val
+			}
+		}
+		if path == "" {
+			return nil
+		}
+		u, err := url.Parse(path)
+		if err == nil && baseURL != nil {
+			u = baseURL.ResolveReference(u)
+		}
+		image := image{
+			src:   u.String(),
+			alt:   alt,
+			title: title,
+		}
+
+		return append(images, image)
+	}
+
+	for child := node.FirstChild; child != nil; child = child.NextSibling {
+		images = append(images, extractImages(child, baseURL)...)
+	}
+
+	return images
+}
+
 func extractTitle(node *html.Node) (string, error) {
 	// Base Case
 	if node.Type == html.ElementNode && node.Data == "title" {

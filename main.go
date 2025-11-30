@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,9 +13,15 @@ import (
 	"github.com/austin-weeks/browse-term/internal/config"
 	"github.com/austin-weeks/browse-term/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/log"
 )
 
 func main() {
+	// Force color output in buffered logs
+	os.Setenv("CLICOLOR_FORCE", "1") // nolint
+	var logBuf bytes.Buffer
+	log.SetOutput(&logBuf)
+
 	ch := make(chan string, 1)
 	go checkLatestVersion(ch)
 	js, err := checkJSEnabled()
@@ -36,6 +43,8 @@ func main() {
 		fmt.Print(msg)
 	default:
 	}
+
+	fmt.Print(logBuf.String())
 }
 
 func checkJSEnabled() (bool, error) {

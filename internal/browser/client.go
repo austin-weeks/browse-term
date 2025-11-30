@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/chromedp/chromedp"
 	"golang.org/x/net/html"
 )
 
-// url -> WebPage
-var webPages map[string]*WebPage = make(map[string]*WebPage)
+const userAgent = "Browse-Term (https://github.com/austin-weeks/browse-term)"
 
 // WebPage represents a website page
 type WebPage struct {
@@ -22,7 +22,11 @@ type WebPage struct {
 	Title   string
 	Content string
 	Links   []Link
+	images  []image
 }
+
+// url -> WebPage
+var webPages map[string]*WebPage = make(map[string]*WebPage)
 
 func FetchWebPage(path string, enableJS bool) (*WebPage, error) {
 	path, _ = strings.CutPrefix(path, "https://")
@@ -66,12 +70,18 @@ func FetchWebPage(path string, enableJS bool) (*WebPage, error) {
 	}
 
 	links := extractLinks(dom, URL)
+	images := extractImages(dom, URL)
+	err = fetchImages(images)
+	if err != nil {
+		log.Error("Error fetching page images", "error", err, "url", url)
+	}
 
 	webPage := &WebPage{
 		URL:     prettyURL,
 		Title:   title,
 		Content: md,
 		Links:   links,
+		images:  images,
 	}
 	webPages[url] = webPage
 	return webPage, nil
@@ -82,7 +92,7 @@ func fetchPlain(url string) (*html.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Browse-Term (https://github.com/austin-weeks/browse-term)")
+	req.Header.Set("User-Agent", userAgent)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -91,7 +101,7 @@ func fetchPlain(url string) (*html.Node, error) {
 	defer resp.Body.Close() // nolint
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Non-200 response: %v", resp.StatusCode)
+		return nil, fmt.Errorf("non-200 response: %v", resp.StatusCode)
 	}
 
 	return html.Parse(resp.Body)
