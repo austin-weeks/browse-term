@@ -12,9 +12,12 @@ import (
 	"github.com/austin-weeks/browse-term/internal/config"
 	"github.com/austin-weeks/browse-term/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/log"
 )
 
 func main() {
+	defer logPanics()
+
 	ch := make(chan string, 1)
 	go checkLatestVersion(ch)
 	js, err := checkJSEnabled()
@@ -96,9 +99,16 @@ func checkLatestVersion(ch chan<- string) {
 	if curVer != newest {
 		var s strings.Builder
 		s.WriteString("\nA new version of browse-term is available!\n\n")
-		s.WriteString(fmt.Sprintf("%s -> %s\n\n", curVer, newest))
+		fmt.Fprintf(&s, "%s -> %s\n\n", curVer, newest)
 		s.WriteString("To update, run:\n")
 		s.WriteString("  go install github.com/austin-weeks/browse-term@latest\n")
 		ch <- s.String()
+	}
+}
+
+func logPanics() {
+	if r := recover(); r != nil {
+		log.Error("browse-term panicked", "reason", fmt.Sprintf("%v", r))
+		os.Exit(1)
 	}
 }

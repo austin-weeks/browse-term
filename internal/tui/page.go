@@ -87,6 +87,12 @@ func (p page) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyMsg:
+		switch msg.String() {
+		case "g":
+			p.viewport.GotoTop()
+		case "G":
+			p.viewport.GotoBottom()
+		}
 		p.viewport, cmd = p.viewport.Update(msg)
 		cmds = append(cmds, cmd)
 
