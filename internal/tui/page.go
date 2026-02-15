@@ -50,12 +50,12 @@ func newPage(jsEnabled bool, theme themes.Theme) page {
 				" Rendering  ",
 				" Rendering  ",
 			},
-			FPS: time.Second / 13, //nolint:mnd
+			FPS: time.Second / 13,
 		}
 	} else {
 		spin.Spinner = spinner.Spinner{
 			Frames: []string{"∙∙∙∙∙∙∙", "●∙∙∙∙∙∙", "∙●∙∙∙∙∙", "∙∙●∙∙∙∙", "∙∙∙●∙∙∙", "∙∙∙∙●∙∙", "∙∙∙∙∙●∙", "∙∙∙∙∙∙●"},
-			FPS:    time.Second / 9, //nolint:mnd
+			FPS:    time.Second / 9,
 		}
 	}
 
