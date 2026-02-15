@@ -26,20 +26,23 @@ func extractLinks(node *html.Node, baseURL *url.URL) []Link {
 			return nil
 		}
 		u, err := url.Parse(path)
-		if err == nil && baseURL != nil {
+		if err != nil {
+			u = &url.URL{}
+		}
+		if baseURL != nil {
 			u = baseURL.ResolveReference(u)
 		}
 		link := Link{
 			URL: u.String(),
 		}
 
-		var name string
+		var name strings.Builder
 		for child := node.FirstChild; child != nil; child = child.NextSibling {
 			if child.Type == html.TextNode {
-				name += child.Data
+				name.WriteString(child.Data)
 			}
 		}
-		link.Name = strings.TrimSpace(name)
+		link.Name = strings.TrimSpace(name.String())
 		return append(links, link)
 	}
 

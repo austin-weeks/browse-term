@@ -26,9 +26,13 @@ type WebPage struct {
 
 func FetchWebPage(path string, enableJS bool) (*WebPage, error) {
 	path, _ = strings.CutPrefix(path, "https://")
-	path, _ = strings.CutPrefix(path, "http://")
+	path, wasBasic := strings.CutPrefix(path, "http://")
 	prettyURL := path
-	path = "https://" + path
+	if wasBasic {
+		path = "http://" + path
+	} else {
+		path = "https://" + path
+	}
 
 	URL, err := url.Parse(path)
 	if err != nil {
