@@ -39,7 +39,7 @@ func (s searchBar) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		withBorders := msg.Width - 3
+		withBorders := msg.Width - 2
 		s.style = s.style.Width(withBorders)
 		s.input.Width = withBorders - len(prompt) - 2
 
